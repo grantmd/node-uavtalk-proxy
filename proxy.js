@@ -5,6 +5,7 @@
 */
 
 var proxy_port = 9999;
+var gcs_connected = false;
 
 var dgram = require('dgram');
 var proxy = dgram.createSocket("udp4");
@@ -12,6 +13,10 @@ proxy.on("message", function(msg, rinfo){
 	//console.log("proxy got: " + msg + " from " + rinfo.address + ":" + rinfo.port);
 
 	console.log(msg);
+	if (!gcs_connected && msg[0] == 0x3c){
+		gcs_connected = true;
+		console.log("GCS connected!");
+	}
 });
 proxy.on("listening", function(){
 	var address = proxy.address();
