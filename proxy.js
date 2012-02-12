@@ -2,6 +2,8 @@
 * node-uavtalk-proxy: A UAVTalk protocol proxy, written in node.js.
 * By: Myles Grant <myles@mylesgrant.com>
 * At: https://github.com/grantmd/node-uavtalk-proxy
+*
+* UAVTalk spec: http://wiki.openpilot.org/display/Doc/UAVTalk
 */
 
 var proxy_port = 9999;
