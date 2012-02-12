@@ -6,7 +6,8 @@
 * UAVTalk spec: http://wiki.openpilot.org/display/Doc/UAVTalk
 */
 
-var proxy_port = 9999;
+var config = require('./config').config;
+
 var gcs_connected = false;
 
 var dgram = require('dgram');
@@ -24,4 +25,4 @@ proxy.on("listening", function(){
 	var address = proxy.address();
 	console.log("proxy listening " + address.address + ":" + address.port);
 });
-proxy.bind(proxy_port);
+proxy.bind(config.proxy_port);
