@@ -37,9 +37,27 @@ proxy.on("message", function(msg, rinfo){
 	//console.log("proxy got: " + msg + " from " + rinfo.address + ":" + rinfo.port);
 
 	console.log(msg);
-	if (!gcs_connected && msg[0] == 0x3c){
-		gcs_connected = true;
-		console.log("GCS connected!");
+	if (msg[0] == 0x3c){
+		if (!gcs_connected){
+			gcs_connected = true;
+			console.log("GCS connected!");
+		}
+
+		// Parse the message into a UAVTalk packet
+		var packet = {
+			type: msg[1],
+			length: msg[2]+lshift(msg[3], 8),
+			obj_id: msg[4]+lshift(msg[5], 8)+lshift(msg[6], 16)+lshift(msg[7], 24),
+			instance_id: msg[8]+lshift(msg[9], 8),
+			data: '',
+			checksum: 0
+		};
+
+		console.log(packet);
+
+		if (uavobjects[packet.obj_id]){
+			console.log("Match: "+uavobjects[packet.obj_id]);
+		}
 	}
 });
 proxy.on("listening", function(){
@@ -105,7 +123,7 @@ function parse_object_def(err, result){
 
 	var id = calculateID(info);
 	info.id = id;
-	//console.log(info);
+	if (info.name == 'GCSTelemetryStats') console.log(info);
 	uavobjects[id] = info;
 }
 
@@ -154,7 +172,7 @@ function calculateID(info){
 function updateHash(value, hash){
 	//console.log("Typeof %s is %s", value, typeof(value));
 	if (typeof(value) == 'number'){
-		var hashout = (hash ^ ((hash<<5) + (hash>>>2) + value));
+		var hashout = (hash ^ (lshift(hash, 5) + (hash>>>2) + value));
 		//console.log("Hash of %d + %d is: %d", hash, value, hashout);
 		return hashout;
 	}
@@ -168,4 +186,10 @@ function updateHash(value, hash){
 
 		return hashout;
 	}
+}
+
+// In JS, numbers are rounded to 32 bits when using bitwise shift operations (<<). Use this function to avoid that. Also, possibly faster?
+// http://stackoverflow.com/questions/337355/javascript-bitwise-shift-of-long-long-number
+function lshift(num, bits) {
+	return num * Math.pow(2,bits);
 }
