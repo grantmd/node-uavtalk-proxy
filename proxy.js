@@ -71,10 +71,15 @@ proxy.on("message", function(msg, rinfo){
 
 		// TODO: Validate checksum
 
-		console.log(packet);
+		//console.log(packet);
 
 		if (uavobjects[packet.obj_id]){
+			uavobjects[packet.obj_id].data = packet.data;
+			uavobjects[packet.obj_id].last_updated = new Date().getTime();
 			console.log("Match!");
+		}
+		else{
+			console.log("NO MATCH! %d", packet.obj_id);
 		}
 	}
 });
