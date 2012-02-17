@@ -70,10 +70,11 @@ function parse_object_def(err, result){
 	if (err) throw err;
 	//console.log(result.object);
 
+	//if (result.object['@'].name != 'GCSTelemetryStats') return;
 	var info = {
 		name: result.object['@'].name,
-		isSettings: result.object['@'].singleinstance == 'true' ? 1 : 0,
-		isSingleInst: result.object['@'].settings == 'true' ? 1 : 0,
+		isSettings: result.object['@'].settings == 'true' ? 1 : 0,
+		isSingleInst: result.object['@'].singleinstance == 'true' ? 1 : 0,
 		description: result.object.description,
 		fields: []
 	};
@@ -92,27 +93,35 @@ function parse_object_def(err, result){
 		switch (hash.type){
 			case "int8":
 				hash.numBytes = 1;
+				hash.type = 0;
 				break;
 			case "int16":
 				hash.numBytes = 2;
+				hash.type = 1;
 				break;
 			case "int32":
 				hash.numBytes = 4;
+				hash.type = 2;
 				break;
 			case "uint8":
 				hash.numBytes = 1;
+				hash.type = 3;
 				break;
 			case "uint16":
 				hash.numBytes = 2;
+				hash.type = 4;
 				break;
 			case "uint32":
 				hash.numBytes = 4;
+				hash.type = 5;
 				break;
 			case "float":
 				hash.numBytes = 4;
+				hash.type = 6;
 				break;
 			case "enum":
 				hash.numBytes = 1;
+				hash.type = 7;
 				break;
 		}
 
@@ -121,14 +130,14 @@ function parse_object_def(err, result){
 
 	info.fields.sort(fieldTypeLessThan);
 
-	var id = calculateID(info);
+	var id = calculateID(info) >> 0 >>> 0; // Calc id, convert to unsigned int: http://ask.metafilter.com/208403/What-kind-of-magic-does-QStringsetNum-do#3005095
 	info.id = id;
-	if (info.name == 'GCSTelemetryStats') console.log(info);
+	//if (info.name == 'GCSTelemetryStats') console.log(info);
 	uavobjects[id] = info;
 }
 
 function fieldTypeLessThan(a, b){
-	return a.numBytes > b.numBytes;
+	return a.numBytes < b.numBytes;
 }
 
 /**
@@ -151,7 +160,7 @@ function calculateID(info){
 		hash = updateHash(info.fields[n].numElements, hash);
 		hash = updateHash(info.fields[n].type, hash);
 
-		if (info.fields[n].type == 'enum'){
+		if (info.fields[n].type == 7){ // enum
 			var options = info.fields[n].options;
 			for (var m = 0; m < options.length; m++){
 				hash = updateHash(options[m], hash);
