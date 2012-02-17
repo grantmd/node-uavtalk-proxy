@@ -43,6 +43,8 @@ proxy.on("message", function(msg, rinfo){
 			console.log("GCS connected!");
 		}
 
+		// TODO: Send packet *immediately* to flight device
+
 		// Parse the message into a UAVTalk packet
 		var packet = {
 			type: msg[1],
@@ -53,10 +55,26 @@ proxy.on("message", function(msg, rinfo){
 			checksum: 0
 		};
 
+		// Sanity
+		if (packet.length > 255) return;
+
+		// Read data up to length
+		for (var i = 0; i<packet.length-10; i++){
+			var idx = 10+i;
+			if (idx > msg.length) break;
+
+			packet.data += lshift(msg[idx], 0*8);
+		}
+
+		// Read checksum. Yes, this could be msg.length-1, but let's at least attempt to follow the spec
+		packet.checksum = msg[packet.length];
+
+		// TODO: Validate checksum
+
 		console.log(packet);
 
 		if (uavobjects[packet.obj_id]){
-			console.log("Match: "+uavobjects[packet.obj_id]);
+			console.log("Match!");
 		}
 	}
 });
